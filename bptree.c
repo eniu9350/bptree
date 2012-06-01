@@ -524,7 +524,7 @@ bptree_fnode* bptree_fnode_split(pagelist* pl, bptree* t, bptree_fnode* fn, key*
 		}
 		newfn->len = fn->len-1-med+1;
 
-		for(j=med-1;j>=i;j++)	{
+		for(j=med-1;j>=i;j--)	{
 			fn->keys[j+1] = fn->keys[j];
 			fn->values[j+1] = fn->values[j];
 		}
@@ -536,12 +536,13 @@ bptree_fnode* bptree_fnode_split(pagelist* pl, bptree* t, bptree_fnode* fn, key*
 			newfn->keys[j-med-1] = fn->keys[j-med-1];
 			newfn->values[j-med-1] = fn->values[j-med-1];
 		}
+		for(j=fn->len-1;j>=i;j--)	{
+			newfn->keys[j-med] = fn->keys[j];
+			newfn->values[j-med] = fn->values[j];
+		}
 		newfn->keys[i-med-1] = *k;
 		newfn->values[i-med-1] = *v;
-		for(j=i;j<fn->len;j++)	{
-			newfn->keys[j-med] = *k;
-			newfn->values[j-med] = *v;
-		}
+
 		newfn->len = fn->len-1-(med+1)+1+1;
 
 		fn->len = med+1;
