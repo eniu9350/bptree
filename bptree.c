@@ -35,6 +35,8 @@ int bptree_insert(pagelist* pl, bptree* t, key* k, value* v)
 
 	bptree_inode* newroot;
 
+//	int itop;
+
 	void* children;
 	int ikey;
 	//void* _pnode;
@@ -81,6 +83,7 @@ int bptree_insert(pagelist* pl, bptree* t, key* k, value* v)
 				bptree_fnode_insert(t, pleaf, k, v);
 			} else	{	//full
 				printf("\ninsert full: %d\n", *k);
+				//itop = -1;
 				for(i=0;i<t->height-1;i++)	{
 					if(((bptree_inode*)ptrace[i])->len==t->order)	{	//the highest that is full
 						break;
@@ -225,7 +228,7 @@ void** bptree_inode_insert(bptree* t, bptree_inode* in, key* k)
 		}
 	}
 
-	for(j=in->len-1-1;j>=i;j++)	{
+	for(j=in->len-1-1;j>=i;j--)	{
 		in->keys[j+1] = in->keys[j];
 		in->children[j+1+1] = in->children[j+1];
 	}
