@@ -88,7 +88,6 @@ int bptree_insert(pagelist* pl, bptree* t, key* k, value* v)
 				}
 
 				//mmm:
-				//} else	{	//other inner inode is full
 				//mmmmmmmmm: wrong?
 				toins = (key*)malloc(t->height*sizeof(key));
 				todel = (key*)malloc(t->height*sizeof(key));
@@ -107,13 +106,15 @@ int bptree_insert(pagelist* pl, bptree* t, key* k, value* v)
 					newroot->keys[0] = todel[0];
 					newroot->children[0] = t->root;
 					newroot->len = 2;
-					
+
 					//mmm: if fnode!!!
-//					newroot->children[1] = bptree_fnode_split(pl, t, t->root, 
+					//					newroot->children[1] = bptree_fnode_split(pl, t, t->root, 
 
 					pnewchildren = &newroot->children[1];
 
 					t->root = newroot;
+					//mmm: set height at last!!!
+					//	t->height = t->height+1;
 				}
 				else	{
 					//					pnewchildren = ptrace[i-1]->xxxxxx;	//this is an exception
@@ -151,29 +152,16 @@ int bptree_insert(pagelist* pl, bptree* t, key* k, value* v)
 				//split leaf
 				*pnewchildren = bptree_fnode_split(pl, t, pleaf, k, v);
 
+				//increase height if root full
+				if(i==0)	{
+					t->height = t->height+1;
+				}
 
-				/*
-					 for(j=i;j<t->height-1;j++)	{
-				//split
-				//let pointer of the parent point to the new node
-				 *pnewchildren = pnewsibling;
-				 }
-				 */
-		}
-		/*
+			}	//full
 
-			 pright = (void**)malloc(t->height*sizeof(void*));
-			 pleft = (void**)malloc(t->height*sizeof(void*));
-			 pright[t->height-1] = (void*)bptree_fnode_split(pl, t, pleaf, k, v);
-			 pleft[t->height-1] = (void*)pleaf;
-			 if(BPTREE_INODE_CAPACITY(t, pinner)!=0)	{
-			 } else	{
-
-			 }
-			 */
-		}
+		}	//key not exist
 	}
-//	bptree_show(t);
+	//	bptree_show(t);
 }
 
 /* ----- bptree inode ops ---------*/
@@ -327,7 +315,7 @@ key* bptree_inode_get_middle(bptree* t, bptree_inode* in, key* k)
 	}
 
 	mid = (in->len-1)/2;
-	
+
 	if((in->len-1)%2)	{
 		if(i<=mid)	{
 			return in->keys+mid;
@@ -518,7 +506,7 @@ bptree_fnode* bptree_fnode_split(pagelist* pl, bptree* t, bptree_fnode* fn, key*
 	bptree_fnode* newfn;
 
 	newfn = bptree_fnode_create(pl, t);
-	
+
 	for(i=0;i<fn->len;i++)	{
 		if(KEY_COMPARE(*k, fn->keys[i])<0)	{
 			break;

@@ -27,6 +27,12 @@ int main()
 	k = 72;
 	v = 42666;
 	bptree_insert(pl, t, &k, &v);
+	k = 40;
+	v = 42666;
+	bptree_insert(pl, t, &k, &v);
+	k = 50;
+	v = 42666;
+	//bptree_insert(pl, t, &k, &v);
 	bptree_show(t);
 	//fn = bptree_fnode_create(pl, t);
 	//p = pagelist_get_free_page(pl);
