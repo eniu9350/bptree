@@ -342,27 +342,21 @@ key* bptree_inode_get_middle(bptree* t, bptree_inode* in, key* k)
 key* bptree_fnode_get_middle(bptree* t, bptree_fnode* fn, key* k)
 {
 	int i;
-	int mid;
+	int med;
 	for(i=0;i<fn->len;i++)	{
 		if(KEY_COMPARE(*k, fn->keys[i])<0)	{
 			break;
 		}
 	}
 
-	mid = (fn->len)/2;
+	med = (fn->len)/2;
 
-	if(fn->len%2)	{
-		if(i<=mid)	{
-			return fn->keys+mid;
-		} else	{
-			return k;
-		}
+	if(i==med)	{
+		return k;
+	} else if(i<med)	{
+		return fn->keys+med-1;
 	} else	{
-		if(i<=mid)	{
-			return k;
-		} else	{
-			return fn->keys+mid;
-		}
+		return fn->keys+med;
 	}
 }
 
@@ -430,12 +424,12 @@ bptree_inode* bptree_inode_insert_remove_split(pagelist* pl, bptree* t, bptree_i
 			//fill the left one(insert only)
 			in->len = delpos+1+1;
 			/*
-			for(i=0;i<in->len-1;i++)	{
-				if(KEY_COMPARE(*ins, in->keys[i])<0)	{
-					break;
-				}
-			}
-			*/
+				 for(i=0;i<in->len-1;i++)	{
+				 if(KEY_COMPARE(*ins, in->keys[i])<0)	{
+				 break;
+				 }
+				 }
+				 */
 			for(j=in->len-1-1;j>=inspos;j--)	{
 				in->keys[j+1] = in->keys[j];
 				in->children[j+1] = in->children[j];
@@ -497,9 +491,10 @@ bptree_fnode* bptree_fnode_create(pagelist* pl, bptree* t)
 		pnode->values = (value*)(_pdata+(order-1)*sizeof(key));
 		pnode->len = 0;
 
+		pnode->next = NULL;
+
 		return pnode;
-	}
-	else	{
+	} else	{
 		perror("get page failed in fnode creation\n");
 		return 0;
 	}
@@ -536,8 +531,8 @@ bptree_fnode* bptree_fnode_split(pagelist* pl, bptree* t, bptree_fnode* fn, key*
 		fn->len = med+1;
 	} else	{//insert after mid and let the right be [mid+1(or k), ~
 		for(j=med+1;j<=i-1;j++)	{
-			newfn->keys[j-med-1] = fn->keys[j-med-1];
-			newfn->values[j-med-1] = fn->values[j-med-1];
+			newfn->keys[j-med-1] = fn->keys[j];
+			newfn->values[j-med-1] = fn->values[j];
 		}
 		for(j=fn->len-1;j>=i;j--)	{
 			newfn->keys[j-med] = fn->keys[j];
@@ -551,37 +546,60 @@ bptree_fnode* bptree_fnode_split(pagelist* pl, bptree* t, bptree_fnode* fn, key*
 		fn->len = med+1;
 	}
 
+	//pointers
+	newfn->next = fn->next;
+	fn->next = newfn;
+
 
 	//remove slots in original node
 	return newfn;
 }
 
 /* ----- bptree utils ---------*/
-void bptree_show(bptree* t)
+void bptree_show(pagelist* pl, bptree* t)
 {
-	int i,j,k;
-	bptree_inode* root = (bptree_inode*)t->root;
-	bptree_fnode* fn;
-	bptree_inode* in;
-	printf("---start---\n");
-	printf("\n");
-	for(i=0;i<root->len;i++)	{
-		if(i<root->len-1)	{
-			printf("(r)%d ", root->keys[i]);
-		}
-		in = (bptree_inode*)root->children[i];
-		for(j=0;j<in->len;j++)	{
-			if(j<in->len-1)	{
-				printf("(i)%d ", in->keys[j]);
-			}
-			fn = (bptree_fnode*)in->children[j];
-			printf("[");
-			for(k=0;k<fn->len;k++)	{
-				printf("(l)%d ", fn->keys[k]);
-			}
-			printf("]");
-		}
+
+	void* p;
+	int i;
+	p = (bptree_inode*)t->root;
+	while(!BPTREE_NODE_ISLEAF(pl, p))	{
+		p = ((bptree_inode*)p)->children[0];
 	}
+	while(p!=NULL)	{
+		printf("[");
+		for(i=0;i<((bptree_fnode*)p)->len;i++)	{
+			printf(" %d", ((bptree_fnode*)p)->keys[i]);
+		}
+		printf("]");
+		p = (void*)((bptree_fnode*)p)->next;
+	}
+
+	/*
+		 int i,j,k;
+		 bptree_inode* root = (bptree_inode*)t->root;
+		 bptree_fnode* fn;
+		 bptree_inode* in;
+		 printf("---start---\n");
+		 printf("\n");
+
+		 for(i=0;i<root->len;i++)	{
+		 if(i<root->len-1)	{
+		 printf("(r)%d ", root->keys[i]);
+		 }
+		 in = (bptree_inode*)root->children[i];
+		 for(j=0;j<in->len;j++)	{
+		 if(j<in->len-1)	{
+		 printf("(i)%d ", in->keys[j]);
+		 }
+		 fn = (bptree_fnode*)in->children[j];
+		 printf("[");
+		 for(k=0;k<fn->len;k++)	{
+		 printf("(l)%d ", fn->keys[k]);
+		 }
+		 printf("]");
+		 }
+		 }
+		 */
 	printf("\n---end---\n\n");
 	/*
 		 int h;
@@ -592,26 +610,4 @@ void bptree_show(bptree* t)
 		 h++;
 		 }
 		 */
-}
-/*
-	 static void bptree_show_inode(bptree* t, bptree_inode* in, int h)	{
-	 int i;
-	 void* children;
-	 for(i=0;i<in->len;i++)	{
-	 children = in->children[i];
-
-
-
-	 }
-	 }
-
-	 static void bptree_show_fnode(bptree* t, bptree_fnode* in)	{
-	 int i;
-	 printf("[ ");
-	 for(i=0;i<fn->len;i++)	{
-	 printf("%d ", fn->keys[i]);
-	 }
-	 printf("] ");
-	 }
-
-*/
+} 

@@ -39,6 +39,7 @@ typedef struct _bptree_fnode	{
 	key* keys;
 	value* values;
 	int len;
+	struct _bptree_fnode* next;
 }bptree_fnode;
 
 
@@ -65,6 +66,6 @@ bptree_fnode* bptree_fnode_split(pagelist* pl, bptree* t, bptree_fnode* fn, key*
 key* bptree_fnode_get_middle(bptree* t, bptree_fnode* fn, key* k);
 
 /* ----- bptree utils ---------*/
-void bptree_show(bptree* t);
+void bptree_show(pagelist* pl, bptree* t);
 
 #endif

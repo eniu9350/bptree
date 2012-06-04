@@ -1,8 +1,56 @@
 #include "bptree.h"
 
 #include <stdio.h>
-
 int main()
+{
+	pagelist* pl;
+	bptree* t;
+	bptree_inode* in;
+	bptree_fnode* fn;
+	int k,v;
+	int i;
+	//void* p;
+	pl = pagelist_create();
+	t = bptree_create(4);
+	for(i=0;i<100;i++)	{
+		k = i+1;
+		v = 42666;
+		bptree_insert(pl, t, &k, &v);
+	}
+	bptree_show(pl, t);
+}
+int main2()
+{
+	pagelist* pl;
+	bptree* t;
+	bptree_inode* in;
+	bptree_fnode* fn;
+	int k,v;
+	int i;
+	//void* p;
+	pl = pagelist_create();
+	t = bptree_create(4);
+	k = 3;
+	v = 42666;
+	bptree_insert(pl, t, &k, &v);
+	k = 6;
+	v = 42666;
+	bptree_insert(pl, t, &k, &v);
+	k = 19;
+	v = 42666;
+	bptree_insert(pl, t, &k, &v);
+	k = 7;
+	v = 42666;
+	bptree_insert(pl, t, &k, &v);
+	k = 4;
+	v = 42666;
+	bptree_insert(pl, t, &k, &v);
+	k = 5;
+	v = 42666;
+	//bptree_insert(pl, t, &k, &v);
+	bptree_show(pl, t);
+}
+int main1()
 {
 	pagelist* pl;
 	bptree* t;
@@ -45,7 +93,7 @@ int main()
 	k = 32;
 	v = 42666;
 	bptree_insert(pl, t, &k, &v);
-	bptree_show(t);
+	bptree_show(pl, t);
 	//fn = bptree_fnode_create(pl, t);
 	//p = pagelist_get_free_page(pl);
 	//in = bptree_inode_create(pl, 5);	
