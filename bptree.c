@@ -75,6 +75,7 @@ int bptree_insert(pagelist* pl, bptree* t, key* k, value* v)
 		}
 
 		if(h!=t->height-1)	{	//key exist already
+			printf("\nkey exist already! (%d), h=%d,height=%d\n", *k, h, t->height);
 			return -1;
 		}	else	{
 			pleaf = (bptree_fnode*)ptrace[t->height-1];
@@ -84,11 +85,13 @@ int bptree_insert(pagelist* pl, bptree* t, key* k, value* v)
 			} else	{	//full
 				printf("\ninsert full: %d\n", *k);
 				//itop = -1;
-				for(i=0;i<t->height-1;i++)	{
-					if(((bptree_inode*)ptrace[i])->len==t->order)	{	//the highest that is full
+				//for(i=0;i<t->height-1;i++)	{
+				for(i=t->height-1;i>=0;i--)	{
+					if(((bptree_inode*)ptrace[i])->len!=t->order)	{	
 						break;
 					}
 				}
+				i++;//the highest that is full
 
 				//mmm:
 				//mmmmmmmmm: wrong?
@@ -295,10 +298,11 @@ int bptree_fnode_insert(bptree* t, bptree_fnode* fn, key* k, value* v)
 			break;
 		}
 	}
-
+/*
 	if(fn->len!=0&&i==fn->len&&t->root!=fn)	{
 		return -2;
 	}
+	*/
 
 	for(j=fn->len-1;j>=i;j--)	{
 		fn->keys[j+1] = fn->keys[j];
@@ -315,28 +319,39 @@ int bptree_fnode_insert(bptree* t, bptree_fnode* fn, key* k, value* v)
 key* bptree_inode_get_middle(bptree* t, bptree_inode* in, key* k)
 {
 	int i;
-	int mid;
+	int med;
 	for(i=0;i<in->len-1;i++)	{
 		if(KEY_COMPARE(*k, in->keys[i])<0)	{
 			break;
 		}
 	}
 
-	mid = (in->len-1)/2;
+	med = (in->len-1)/2;
 
-	if((in->len-1)%2)	{
-		if(i<=mid)	{
-			return in->keys+mid;
-		} else	{
-			return k;
-		}
+	if(i==med)	{
+		return k;
+	} else if(i<med)	{
+		//return in->keys+med-1;
+		return in->keys+med;
 	} else	{
-		if(i<=mid)	{
-			return k;
-		} else	{
-			return in->keys+mid;
-		}
+		//return in->keys+med;
+		return in->keys+med+1;
 	}
+	/*
+		 if((in->len-1)%2)	{
+		 if(i<=mid)	{
+		 return in->keys+mid;
+		 } else	{
+		 return k;
+		 }
+		 } else	{
+		 if(i<=mid)	{
+		 return k;
+		 } else	{
+		 return in->keys+mid;
+		 }
+		 }
+		 */
 }
 
 key* bptree_fnode_get_middle(bptree* t, bptree_fnode* fn, key* k)
@@ -376,10 +391,10 @@ bptree_inode* bptree_inode_insert_remove_split(pagelist* pl, bptree* t, bptree_i
 	//get ins position
 	for(i=0;i<in->len-1;i++)	{
 		if(KEY_COMPARE(*ins, in->keys[i])<0)	{
-			inspos = i;
 			break;
 		}
 	}
+	inspos = i;
 	//get del position
 	if(*del==*ins)	{
 		i=inspos;
@@ -406,13 +421,17 @@ bptree_inode* bptree_inode_insert_remove_split(pagelist* pl, bptree* t, bptree_i
 
 		//fill the left one(decrease length only)
 		in->len = delpos-1+1+1;
+
+		*newchildren = &in->children[inspos+1];
 	} else	{
 
 		if(i==in->len-1)	{
+			printf("ins=%d,del=%d", *ins, *del);
 			perror("bptree_inode_insert_remove_failure: del key not found!\n");
 		}	
 
 		if(inspos<delpos)	{	//inserted at left
+			//mmmmmmm: if leftmost?
 			//fill the right one
 			innew->len = in->len-1-1-(delpos+1)+1+1;
 			for(i=delpos+1;i<in->len-1;i++)	{
@@ -437,27 +456,35 @@ bptree_inode* bptree_inode_insert_remove_split(pagelist* pl, bptree* t, bptree_i
 			in->keys[inspos+1] = *ins;
 
 			*newchildren = &in->children[inspos+1];
-		}	else	{
+		}	else	{	//mmmmmmm: check again!
 			//fill the right one(copy and insert)
 			innew->len = in->len-1-1-(delpos+1)+1+1+1;
 			for(i=delpos+1;i<in->len-1;i++)	{
 				innew->keys[i-(delpos+1)] = in->keys[i];
+			}
+			for(i=delpos+1;i<in->len;i++)	{
 				innew->children[i-(delpos+1)] = in->children[i];
 			}
-			innew->children[innew->len-1] = in->children[in->len-1];
+			if(inspos!=in->len-1)	{	//not rightmost
+				innew->children[innew->len-1] = in->children[in->len-1];
+			}
 
-			for(i=0;i<innew->len-1;i++)	{
+			for(i=0;i<innew->len-1-1;i++)	{	//exclude the one to be inserted
 				if(KEY_COMPARE(*ins, innew->keys[i])<0)	{
 					break;
 				}
 			}
-			for(j=innew->len-1-1;j>=i;j++)	{
+			for(j=innew->len-1-1;j>=i;j--)	{
 				innew->keys[j+1] = innew->keys[j];
 				innew->children[j+1] = innew->children[j];
 			}
 			innew->keys[i] = *ins;
 
-			*newchildren = &innew->children[i];
+			if(inspos!=in->len-1)	{	//not rightmost
+				*newchildren = &innew->children[i];
+			} else	{
+				*newchildren = &innew->children[innew->len-1];
+			}
 
 			//fill the left one(decrease length only)
 			in->len = delpos-1+1+1;
@@ -560,19 +587,127 @@ void bptree_show(pagelist* pl, bptree* t)
 {
 
 	void* p;
-	int i;
-	p = (bptree_inode*)t->root;
-	while(!BPTREE_NODE_ISLEAF(pl, p))	{
-		p = ((bptree_inode*)p)->children[0];
-	}
-	while(p!=NULL)	{
-		printf("[");
-		for(i=0;i<((bptree_fnode*)p)->len;i++)	{
-			printf(" %d", ((bptree_fnode*)p)->keys[i]);
+	int i,j,k,l;
+	bptree_inode* in;
+	bptree_inode* in2;
+	bptree_fnode* fn;
+
+	if(t->height==1)	{
+		printf("===\n[R]");
+		for(i=0;i<((bptree_fnode*)t->root)->len;i++)	{
+			printf(" %d", ((bptree_fnode*)t->root)->keys[i]);
 		}
-		printf("]");
-		p = (void*)((bptree_fnode*)p)->next;
+		printf("\n===\n");
+	}	else if(t->height==2)	{
+		printf("===\n[R]");
+		for(i=0;i<((bptree_inode*)t->root)->len-1;i++)	{
+			printf(" %d", ((bptree_inode*)t->root)->keys[i]);
+		}
+		printf("\n");
+		printf("[L]");
+		for(i=0;i<((bptree_inode*)t->root)->len;i++)	{
+			fn = (bptree_fnode*)(((bptree_inode*)t->root)->children[i]);
+			printf(" [");
+			for(j=0;j<fn->len;j++)	{
+				printf(" %d", fn->keys[j]);
+			}
+			printf("]");
+		}
+		printf("\n===\n");
+	} else if(t->height==3)	{
+		printf("===\n[R]");
+		for(i=0;i<((bptree_inode*)t->root)->len-1;i++)	{
+			printf(" %d", ((bptree_inode*)t->root)->keys[i]);
+		}
+		printf("\n");
+		printf("[I1]");
+		for(i=0;i<((bptree_inode*)t->root)->len;i++)	{
+			in = (bptree_inode*)(((bptree_inode*)t->root)->children[i]);
+			printf(" [");
+			for(j=0;j<in->len-1;j++)	{
+				printf(" %d", in->keys[j]);
+			}
+			printf("]");
+		}
+		printf("\n");
+		printf("[L]");
+		for(i=0;i<((bptree_inode*)t->root)->len;i++)	{
+			in = (bptree_inode*)(((bptree_inode*)t->root)->children[i]);
+			for(j=0;j<in->len;j++)	{
+				fn = (bptree_fnode*)(in->children[j]);
+				printf(" [");
+				for(k=0;k<fn->len;k++)	{
+					printf(" %d", fn->keys[k]);
+				}
+				printf("]");
+			}
+		}
+		printf("\n===\n");
+
+	} else if(t->height==4)	{
+		printf("===\n[R]");
+		for(i=0;i<((bptree_inode*)t->root)->len-1;i++)	{
+			printf(" %d", ((bptree_inode*)t->root)->keys[i]);
+		}
+		printf("\n");
+		printf("[I1]");
+		for(i=0;i<((bptree_inode*)t->root)->len;i++)	{
+			in = (bptree_inode*)(((bptree_inode*)t->root)->children[i]);
+			printf(" [");
+			for(j=0;j<in->len-1;j++)	{
+				printf(" %d", in->keys[j]);
+			}
+			printf("]");
+		}
+		printf("\n");
+		printf("[I2]");
+		for(i=0;i<((bptree_inode*)t->root)->len;i++)	{
+			in = (bptree_inode*)(((bptree_inode*)t->root)->children[i]);
+			for(j=0;j<in->len;j++)	{
+				in2 = (bptree_inode*)(in->children[j]);
+				printf(" [");
+				for(k=0;k<fn->len-1;k++)	{
+					printf(" %d", in2->keys[k]);
+				}
+				printf("]");
+			}
+		}
+		printf("\n");
+		printf("[L]");
+		for(i=0;i<((bptree_inode*)t->root)->len;i++)	{
+			in = (bptree_inode*)(((bptree_inode*)t->root)->children[i]);
+			for(j=0;j<in->len;j++)	{
+				in2 = (bptree_inode*)(in->children[j]);
+				for(k=0;k<in2->len;k++)	{
+					fn = (bptree_fnode*)(in2->children[k]);
+					printf(" [");
+					for(l=0;l<fn->len;l++)	{
+						printf(" %d", fn->keys[l]);
+					}
+					printf("]");
+				}
+			}
+		}
+		printf("\n===\n");
+
 	}
+
+
+
+	/*
+		 p = (bptree_inode*)t->root;
+		 while(!BPTREE_NODE_ISLEAF(pl, p))	{
+		 p = ((bptree_inode*)p)->children[0];
+		 }
+		 while(p!=NULL)	{
+		 printf("[");
+		 for(i=0;i<((bptree_fnode*)p)->len;i++)	{
+		 printf(" %d", ((bptree_fnode*)p)->keys[i]);
+		 }
+		 printf("]");
+		 p = (void*)((bptree_fnode*)p)->next;
+		 }
+		 */
 
 	/*
 		 int i,j,k;
