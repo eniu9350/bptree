@@ -11,7 +11,8 @@ int main()
 	int i;
 	//void* p;
 	pl = pagelist_create();
-	t = bptree_create(5);
+	t = bptree_create(10);
+	//mmmmm: order = 100, insert 1~1001, when 496, error!
 	for(i=0;i<100;i++)	{
 		k = i+1;
 		v = 42666;
