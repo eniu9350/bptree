@@ -80,10 +80,10 @@ int bptree_insert(pagelist* pl, bptree* t, key* k, value* v)
 		}	else	{
 			pleaf = (bptree_fnode*)ptrace[t->height-1];
 			if(BPTREE_FNODE_CAPACITY(t, pleaf)!=0)	{	//not full
-				printf("\ninsert not full: %d\n", *k);
+				//printf("\ninsert not full: %d\n", *k);
 				bptree_fnode_insert(t, pleaf, k, v);
 			} else	{	//full
-				printf("\ninsert full: %d\n", *k);
+				//printf("\ninsert full: %d\n", *k);
 				//itop = -1;
 				//for(i=0;i<t->height-1;i++)	{
 				for(i=t->height-1;i>=0;i--)	{
@@ -666,7 +666,7 @@ void bptree_show(pagelist* pl, bptree* t)
 			for(j=0;j<in->len;j++)	{
 				in2 = (bptree_inode*)(in->children[j]);
 				printf(" [");
-				for(k=0;k<fn->len-1;k++)	{
+				for(k=0;k<in2->len-1;k++)	{
 					printf(" %d", in2->keys[k]);
 				}
 				printf("]");
@@ -735,7 +735,7 @@ void bptree_show(pagelist* pl, bptree* t)
 		 }
 		 }
 		 */
-	printf("\n---end---\n\n");
+	printf("\n---end---(height=%d)\n\n", t->height);
 	/*
 		 int h;
 		 h = 0;
