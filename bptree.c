@@ -314,7 +314,6 @@ bptree_inode* bptree_inode_insert_remove_split(pagelist* pl, bptree* t, bptree_i
 
 		*newchildren = &in->children[inspos+1];
 	} else	{
-
 		if(i==in->len-1)	{
 			printf("ins=%d,del=%d", *ins, *del);
 			perror("bptree_inode_insert_remove_failure: del key not found!\n");
@@ -322,6 +321,7 @@ bptree_inode* bptree_inode_insert_remove_split(pagelist* pl, bptree* t, bptree_i
 
 		if(inspos<delpos)	{	//inserted at left
 			//mmmmmmm: if leftmost?
+
 			//fill the right one
 			innew->len = in->len-1-1-(delpos+1)+1+1;
 			for(i=delpos+1;i<in->len-1;i++)	{
@@ -332,18 +332,12 @@ bptree_inode* bptree_inode_insert_remove_split(pagelist* pl, bptree* t, bptree_i
 
 			//fill the left one(insert only)
 			in->len = delpos+1+1;
-			/*
-				 for(i=0;i<in->len-1;i++)	{
-				 if(KEY_COMPARE(*ins, in->keys[i])<0)	{
-				 break;
-				 }
-				 }
-				 */
 			for(j=in->len-1-1;j>=inspos;j--)	{
 				in->keys[j+1] = in->keys[j];
 				in->children[j+1] = in->children[j];
 			}
-			in->keys[inspos+1] = *ins;
+			//in->keys[inspos+1] = *ins;
+			in->keys[inspos] = *ins;
 
 			*newchildren = &in->children[inspos+1];
 		}	else	{	//mmmmmmm: check again!

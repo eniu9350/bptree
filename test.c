@@ -11,9 +11,10 @@ int main()
 	int i;
 	//void* p;
 	pl = pagelist_create();
-	t = bptree_create(4);
+	t = bptree_create(10);
 	
-	for(i=10;i>=0;i--)	{
+	for(i=0;i<1000;i++)	{
+	//for(i=10;i>=0;i--)	{
 		k = i+1;
 		v = 42666;
 		bptree_insert(pl, t, &k, &v);
