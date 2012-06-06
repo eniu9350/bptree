@@ -61,6 +61,7 @@ bptree_inode* bptree_inode_split_at(pagelist* pl, bptree* t, bptree_inode* inpar
 
 /* ----- bptree fnode ops ---------*/
 bptree_fnode* bptree_fnode_create(pagelist* pl, bptree* t);
+void* bptree_fnode_search(bptree* t, bptree_fnode* in, key* k, int* ikey);
 int bptree_fnode_insert(bptree* t, bptree_fnode* fn, key* k, value* v);
 bptree_fnode* bptree_fnode_split(pagelist* pl, bptree* t, bptree_fnode* fn, key* k, value* v);
 key* bptree_fnode_get_middle(bptree* t, bptree_fnode* fn, key* k);

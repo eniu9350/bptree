@@ -69,10 +69,15 @@ int bptree_insert(pagelist* pl, bptree* t, key* k, value* v)
 			}
 		}
 
-		if(h!=t->height-1)	{	//key exist already
+		if(h!=t->height-1)	{	//key exist already(found in inner node or leaf node)
 			printf("\nkey exist already! (%d), h=%d,height=%d\n", *k, h, t->height);
 			return -1;
 		}	else	{
+			children = bptree_fnode_search(t, ptrace[t->height-1], k, &ikey);
+			if(children!=NULL)	{
+				printf("\nkey exist already(l)! (%d), h=%d,height=%d\n", *k, h, t->height);
+				return -1;
+			}
 			pleaf = (bptree_fnode*)ptrace[t->height-1];
 			if(BPTREE_FNODE_CAPACITY(t, pleaf)!=0)	{	//not full
 				printf("\ninsert not full: %d\n", *k);
@@ -410,6 +415,20 @@ bptree_fnode* bptree_fnode_create(pagelist* pl, bptree* t)
 	}
 }
 
+
+void* bptree_fnode_search(bptree* t, bptree_fnode* fn, key* k, int* ikey){
+	int i;
+	for(i=0;i<fn->len;i++)	{	//key count = children count - 1
+		if(KEY_COMPARE(*k, fn->keys[i])==0)	{
+			*ikey = i;
+			return &fn->values[i];
+		}	else if(KEY_COMPARE(*k, fn->keys[i])<0)	{
+			break;
+		}
+	}
+	return NULL;
+
+}
 
 /*
  * return: 0 if ok, -1 if full, -2 if other.
