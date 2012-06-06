@@ -11,14 +11,14 @@ int main()
 	int i;
 	//void* p;
 	pl = pagelist_create();
-	t = bptree_create(40);
+	t = bptree_create(4);
 	
-	for(i=0;i<100000;i++)	{
+	for(i=10;i>=0;i--)	{
 		k = i+1;
 		v = 42666;
 		bptree_insert(pl, t, &k, &v);
+		bptree_show(pl, t);
 	}
-//	bptree_show(pl, t);
 }
 
 int main2()

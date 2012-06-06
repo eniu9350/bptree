@@ -52,8 +52,8 @@ int bptree_insert(pagelist* pl, bptree* t, key* k, value* v);
 bptree_inode* bptree_inode_create(pagelist* pl, bptree* t);
 void* bptree_inode_search(bptree* t, bptree_inode* in, key* k, int* ikey);
 void** bptree_inode_insert(bptree* t, bptree_inode* in, key* k);
-key* bptree_inode_get_middle(bptree* t, bptree_inode* in, key* k);
 bptree_inode* bptree_inode_split(pagelist* pl, bptree* t, bptree_inode* in);
+key* bptree_inode_get_middle(bptree* t, bptree_inode* in, key* k);
 bptree_inode* bptree_inode_insert_remove_split(pagelist* pl, bptree* t, bptree_inode* in, key* ins, key* del, void*** newchildren);
 /*
 bptree_inode* bptree_inode_split_at(pagelist* pl, bptree* t, bptree_inode* inparent, bptree_inode* inchildren);
