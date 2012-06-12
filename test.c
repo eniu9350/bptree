@@ -10,10 +10,15 @@ int main()
 	bptree_fnode* fn;
 	int k,v;
 	int i;
+	char c;
 	//void* p;
 	pl = pagelist_create();
 	t = bptree_create(300);
 	
+	//printf("sizeof IS %d\n", sizeof(RESTORE_INDEX_SPLITTER));
+	//c = ' ';
+	//printf("sizeof IS %d\n", sizeof(c));
+
 	//for(i=0;i<1000000;i++)	{
 	for(i=1000000;i>=0;i--)	{
 		k = i+1;
@@ -21,7 +26,10 @@ int main()
 		bptree_insert(pl, t, &k, &v);
 	}
 	//bptree_show(pl, t);
+
+
 	backup_snappy(pl, t, "./index", "./data");
+	restore_snappy(5, "./index", "./data");
 	
 }
 
