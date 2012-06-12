@@ -1,4 +1,5 @@
 #include "bptree.h"
+#include "restore.h"
 
 #include <stdio.h>
 int main()
@@ -13,12 +14,15 @@ int main()
 	pl = pagelist_create();
 	t = bptree_create(300);
 	
-	for(i=0;i<1000000;i++)	{
+	//for(i=0;i<1000000;i++)	{
+	for(i=1000000;i>=0;i--)	{
 		k = i+1;
 		v = 42666;
 		bptree_insert(pl, t, &k, &v);
 	}
-	bptree_show(pl, t);
+	//bptree_show(pl, t);
+	backup_snappy(pl, t, "./index", "./data");
+	
 }
 
 int main2()

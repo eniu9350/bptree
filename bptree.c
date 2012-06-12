@@ -81,12 +81,12 @@ int bptree_insert(pagelist* pl, bptree* t, key* k, value* v)
 			pleaf = (bptree_fnode*)ptrace[t->height-1];
 			if(BPTREE_FNODE_CAPACITY(t, pleaf)!=0)	{	//not full
 				if(*k%10000==1)	{
-					printf("\ninsert not full: %d\n", *k);
+					//printf("\ninsert not full: %d\n", *k);
 				}
 				bptree_fnode_insert(t, pleaf, k, v);
 			} else	{	//full
 				if(*k%10000==1)	{
-					printf("\ninsert full: %d\n", *k);
+					//printf("\ninsert full: %d\n", *k);
 				}
 				//itop = -1;
 				for(i=t->height-1;i>=0;i--)	{
