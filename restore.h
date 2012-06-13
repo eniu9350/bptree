@@ -9,6 +9,6 @@
 
 //-----snappy------------
 void backup_snappy(pagelist* pl, bptree* t, char* fnindex, char* fndata);
-bptree* restore_snappy(int order, char* fnindex, char* fndata);
+bptree* restore_snappy(pagelist* pl, int order, char* fnindex, char* fndata);
 
 #endif

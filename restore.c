@@ -59,21 +59,54 @@ void backup_snappy(pagelist* pl, bptree* t, char* fnindex, char* fndata)
 
 }
 
-bptree* restore_snappy(int order, char* fnindex, char* fndata)
+bptree* restore_snappy(pagelist* pl, int order, char* fnindex, char* fndata)
 {
 	FILE* f;
 	int k;
 	int i;
 	char c;
+	bptree* t;
+	bptree_fnode* fn;
+	bptree_fnode* prevfn = NULL;
+	int nnode;	//count of node of this height
+	int tempv = 0;
+	key* klist;
+	int nkey;
+	int nkey_prev;
+
+	t = bptree_create(order);
+
 	f = fopen(fnindex, "rb");
-	i = 50;
+	//create fnode without value
+	nkey = 0;
 	while(!feof(f))	{
 		fread((void*)&k, 1, sizeof(key), f);
 		if(feof(f))	{
 			break;
 		}
-		//printf("key=%d\n", k);
+		nkey++;
+		fn = bptree_fnode_create(pl, t);	
+		if(!prevfn)	{
+			prevfn->next = fn;
+		}
+		bptree_fnode_insert(t, fn, &k, &tempv);
+		printf("key=%d\n", k);
 		fseek(f, RESTORE_INDEX_SPLITTER_REPCOUNT*sizeof(char), SEEK_CUR);
 	}
 	fclose(f);
+
+	//create inner node
+	klist = (key*)malloc(nkey*sizeof(key));
+	while(nnode>1)	{
+		i=0;
+		while(i<nkey_prev)	{
+			if(in->len==t->order)	{
+				in = bptree_inode_create(pl, t);
+			}
+			bptree_inode_insert(t, in, &klist[i]);
+			i++;
+		}
+		
+	}
+
 }
