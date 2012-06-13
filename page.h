@@ -2,7 +2,7 @@
 #define _BPTREE_PAGE_
 
 #define PAGE_SIZE 32*1024	//byte
-#define INIT_PAGELIST_SIZE	10240//pages
+#define INIT_PAGELIST_SIZE	10240*4//pages
 
 
 /*------------- page list ------------------------------*/

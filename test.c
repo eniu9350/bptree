@@ -30,7 +30,7 @@ int main()
 
 
 	backup_snappy(pl, t, "./index", "./data");
-	newt = restore_snappy(pl, 5, "./index", "./data");
+	newt = restore_snappy(pl, 300, "./index", "./data");
 	bptree_show(pl, newt);
 	
 }
