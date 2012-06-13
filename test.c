@@ -14,14 +14,14 @@ int main()
 	char c;
 	//void* p;
 	pl = pagelist_create();
-	t = bptree_create(300);
+	t = bptree_create(30);
 	
 	//printf("sizeof IS %d\n", sizeof(RESTORE_INDEX_SPLITTER));
 	//c = ' ';
 	//printf("sizeof IS %d\n", sizeof(c));
 
 	//for(i=0;i<1000000;i++)	{
-	for(i=1000000;i>=0;i--)	{
+	for(i=1000;i>=0;i--)	{
 		k = i+1;
 		v = 42666;
 		bptree_insert(pl, t, &k, &v);
@@ -30,7 +30,7 @@ int main()
 
 
 	backup_snappy(pl, t, "./index", "./data");
-	newt = restore_snappy(pl, 300, "./index", "./data");
+	newt = restore_snappy(pl, 30, "./index", "./data");
 	bptree_show(pl, newt);
 	
 }

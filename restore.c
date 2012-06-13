@@ -50,7 +50,7 @@ void backup_snappy(pagelist* pl, bptree* t, char* fnindex, char* fndata)
 	fnode = (bptree_fnode*)p;
 	while(fnode)	{
 		backup_write_key(f, &fnode->keys[fnode->len-1]);
-		printf("key written: %d\n", fnode->keys[fnode->len-1]);
+		//printf("key written: %d\n", fnode->keys[fnode->len-1]);
 		if(fnode->next)	{
 			backup_write_index_splitter(f);	
 		}
@@ -101,7 +101,7 @@ bptree* restore_snappy(pagelist* pl, int order, char* fnindex, char* fndata)
 		}
 		prevfn = fn;
 		bptree_fnode_insert(t, fn, &k, &tempv);
-		printf("key=%d\n", k);
+		//printf("key=%d\n", k);
 		fseek(f, RESTORE_INDEX_SPLITTER_REPCOUNT*sizeof(char), SEEK_CUR);
 	}
 	fclose(f);
@@ -124,9 +124,11 @@ bptree* restore_snappy(pagelist* pl, int order, char* fnindex, char* fndata)
 			if(g==0)	{
 				children = bptree_inode_insert(t, in, &((bptree_fnode*)nlist_prev[i])->keys[((bptree_fnode*)nlist_prev[i])->len-1]);
 				*(children-1) = nlist_prev[i];
+				//printf("%d\n",((bptree_fnode*)nlist_prev[i])->keys[((bptree_fnode*)nlist_prev[i])->len-1]);
 			}	else	{
 				children = bptree_inode_insert(t, in, &((bptree_inode*)nlist_prev[i])->keys[((bptree_inode*)nlist_prev[i])->len-1-1]);
 				*(children-1) = nlist_prev[i];
+				//printf("%d\n",((bptree_inode*)nlist_prev[i])->keys[((bptree_inode*)nlist_prev[i])->len-1-1]);
 			}
 			i++;
 		}
@@ -146,5 +148,5 @@ bptree* restore_snappy(pagelist* pl, int order, char* fnindex, char* fndata)
 		perror("snappy_restore: nnode!=1");
 	}
 	t->root = in;
-	t->height = g;
+	t->height = g+1;
 }
