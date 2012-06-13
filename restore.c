@@ -1,6 +1,8 @@
 #include "restore.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+
 
 //-----util method------------
 static void backup_write_value(FILE* f, value* v)
@@ -68,24 +70,32 @@ bptree* restore_snappy(pagelist* pl, int order, char* fnindex, char* fndata)
 	bptree* t;
 	bptree_fnode* fn;
 	bptree_fnode* prevfn = NULL;
-	int nnode;	//count of node of this height
+	int nnode, nnode_prev;	//count of node of this height,last height
 	int tempv = 0;
-	key* klist;
+	//	key* klist;
+	void** nlist;
+	void** nlist_prev;
 	int nkey;
 	int nkey_prev;
+	int g;
+	bptree_inode* in;
+	void** children;
 
 	t = bptree_create(order);
 
 	f = fopen(fnindex, "rb");
 	//create fnode without value
 	nkey = 0;
+	nlist = (void**)malloc(nkey*sizeof(void*));
+	nlist_prev = (void**)malloc(nkey*sizeof(void*));
 	while(!feof(f))	{
 		fread((void*)&k, 1, sizeof(key), f);
 		if(feof(f))	{
 			break;
 		}
-		nkey++;
 		fn = bptree_fnode_create(pl, t);	
+		nlist_prev[nkey] = fn;
+		nkey++;
 		if(!prevfn)	{
 			prevfn->next = fn;
 		}
@@ -96,17 +106,44 @@ bptree* restore_snappy(pagelist* pl, int order, char* fnindex, char* fndata)
 	fclose(f);
 
 	//create inner node
-	klist = (key*)malloc(nkey*sizeof(key));
-	while(nnode>1)	{
+	//klist = (key*)malloc(nkey*sizeof(key));
+	g = 0;	//inverse height
+	nnode_prev = nkey;
+
+	do	{
+		nnode = 0;
 		i=0;
-		while(i<nkey_prev)	{
-			if(in->len==t->order)	{
+		in = NULL;
+		while(i<nnode_prev-1)	{
+			if(in==NULL || in->len==t->order)	{
 				in = bptree_inode_create(pl, t);
+				nlist[nnode] = in;
+				nnode++;
 			}
-			bptree_inode_insert(t, in, &klist[i]);
+			if(g==0)	{
+				children = bptree_inode_insert(t, in, &((bptree_fnode*)nlist_prev[i])->keys[((bptree_fnode*)nlist_prev[i])->len-1]);
+				*(children-1) = nlist_prev[i];
+			}	else	{
+				children = bptree_inode_insert(t, in, &((bptree_inode*)nlist_prev[i])->keys[((bptree_inode*)nlist_prev[i])->len-1-1]);
+				*(children-1) = nlist_prev[i];
+			}
 			i++;
 		}
-		
-	}
 
+		in->children[in->len-1] = nlist_prev[i];
+
+		for(i=0;i<nnode;i++)	{
+			nlist_prev[i] = nlist[i];
+		}
+
+
+		nnode_prev = nnode;
+		g++;
+	}	while(nnode>1);
+
+	if(nnode!=1)	{
+		perror("snappy_restore: nnode!=1");
+	}
+	t->root = in;
+	t->height = g;
 }

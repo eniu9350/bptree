@@ -6,6 +6,7 @@ int main()
 {
 	pagelist* pl;
 	bptree* t;
+	bptree* newt;
 	bptree_inode* in;
 	bptree_fnode* fn;
 	int k,v;
@@ -29,7 +30,8 @@ int main()
 
 
 	backup_snappy(pl, t, "./index", "./data");
-	restore_snappy(5, "./index", "./data");
+	newt = restore_snappy(pl, 5, "./index", "./data");
+	bptree_show(pl, newt);
 	
 }
 
