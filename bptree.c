@@ -591,8 +591,12 @@ void bptree_show(pagelist* pl, bptree* t)
 		for(i=0;i<((bptree_inode*)t->root)->len;i++)	{
 			in = (bptree_inode*)(((bptree_inode*)t->root)->children[i]);
 			printf(" [");
-			for(j=0;j<in->len-1;j++)	{
-				printf(" %d", in->keys[j]);
+			if(in==NULL)	{
+					printf(" E");
+			}else	{
+				for(j=0;j<in->len-1;j++)	{
+					printf(" %d", in->keys[j]);
+				}
 			}
 			printf("]");
 		}
@@ -603,8 +607,12 @@ void bptree_show(pagelist* pl, bptree* t)
 			for(j=0;j<in->len;j++)	{
 				fn = (bptree_fnode*)(in->children[j]);
 				printf(" [");
-				for(k=0;k<fn->len;k++)	{
-					printf(" %d", fn->keys[k]);
+				if(fn==NULL)	{
+					printf(" E");
+				}else	{
+					for(k=0;k<fn->len;k++)	{
+						printf(" %d", fn->keys[k]);
+					}
 				}
 				printf("]");
 			}

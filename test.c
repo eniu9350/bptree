@@ -20,8 +20,8 @@ int main()
 	//c = ' ';
 	//printf("sizeof IS %d\n", sizeof(c));
 
-	//for(i=0;i<1000000;i++)	{
-	for(i=1000;i>=0;i--)	{
+	for(i=0;i<100000;i++)	{
+	//for(i=1000;i>=0;i--)	{
 		k = i+1;
 		v = 42666;
 		bptree_insert(pl, t, &k, &v);

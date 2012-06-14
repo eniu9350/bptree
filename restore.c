@@ -117,6 +117,11 @@ bptree* restore_snappy(pagelist* pl, int order, char* fnindex, char* fndata)
 		in = NULL;
 		while(i<nnode_prev-1)	{
 			if(in==NULL || in->len==t->order)	{
+				if(in==NULL)	{
+				} else if(in->len==t->order)	{
+					in->children[in->len-1] = nlist_prev[i];
+					i++;
+				}
 				in = bptree_inode_create(pl, t);
 				nlist[nnode] = in;
 				nnode++;
