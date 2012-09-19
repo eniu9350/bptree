@@ -1,7 +1,10 @@
-#include "bptree.h"
-
 #include <stdio.h>
 #include <stdlib.h>
+
+
+#include "bptree.h"
+
+
 
 /* ----- bptree ops ---------*/
 bptree* bptree_create(int order)
